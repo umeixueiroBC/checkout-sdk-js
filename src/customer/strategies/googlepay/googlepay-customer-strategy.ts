@@ -4,6 +4,7 @@ import { CheckoutStore, InternalCheckoutSelectors } from '../../../checkout';
 import { InvalidArgumentError, MissingDataError, MissingDataErrorType, NotImplementedError } from '../../../common/error/errors';
 import { SDK_VERSION_HEADERS } from '../../../common/http-request';
 import { bindDecorator as bind } from '../../../common/utility';
+import { PaymentMethodActionCreator } from '../../../payment';
 import { GooglePayPaymentProcessor } from '../../../payment/strategies/googlepay';
 import { RemoteCheckoutActionCreator } from '../../../remote-checkout';
 import { getShippableItemsCount } from '../../../shipping';
@@ -14,15 +15,17 @@ import GooglePayCustomerInitializeOptions from './googlepay-customer-initialize-
 
 export default class GooglePayCustomerStrategy implements CustomerStrategy {
     private _walletButton?: HTMLElement;
+    private _StoreUrl?: string;
 
     constructor(
         private _store: CheckoutStore,
         private _remoteCheckoutActionCreator: RemoteCheckoutActionCreator,
         private _googlePayPaymentProcessor: GooglePayPaymentProcessor,
-        private _formPoster: FormPoster
+        private _formPoster: FormPoster,
+        private _paymentMethodActionCreator: PaymentMethodActionCreator
     ) {}
 
-    initialize(options: CustomerInitializeOptions): Promise<InternalCheckoutSelectors> {
+    async initialize(options: CustomerInitializeOptions): Promise<InternalCheckoutSelectors> {
         const { methodId }  = options;
 
         const googlePayOptions = this._getGooglePayOptions(options);
@@ -30,6 +33,18 @@ export default class GooglePayCustomerStrategy implements CustomerStrategy {
         if (!methodId) {
             throw new MissingDataError(MissingDataErrorType.MissingPaymentMethod);
         }
+
+        const {
+            paymentMethods: { getPaymentMethodOrThrow },
+        } = await this._store.dispatch(this._paymentMethodActionCreator.loadPaymentMethod(methodId, options));
+
+        const { initializationData: { storeUrl } } = getPaymentMethodOrThrow(methodId);
+
+        if (!storeUrl) {
+            throw new MissingDataError(MissingDataErrorType.MissingPaymentMethod);
+        }
+
+        this._StoreUrl = storeUrl;
 
         return this._googlePayPaymentProcessor.initialize(methodId)
             .then(() => {
@@ -139,7 +154,11 @@ export default class GooglePayCustomerStrategy implements CustomerStrategy {
     }
 
     private _onPaymentSelectComplete(): void {
-        this._formPoster.postForm('/checkout.php', {
+        if (!this._StoreUrl) {
+            throw new MissingDataError(MissingDataErrorType.MissingPaymentMethod);
+        }
+
+        this._formPoster.postForm(this._StoreUrl, {
             headers: {
                 Accept: 'text/html',
                 'Content-Type': 'application/x-www-form-urlencoded',

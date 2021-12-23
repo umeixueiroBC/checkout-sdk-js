@@ -73,7 +73,8 @@ export default function createCustomerStrategyRegistry(
                 store,
                 new GooglePayAdyenV2Initializer()
             ),
-            formPoster
+            formPoster,
+            paymentMethodActionCreator
         )
     );
 
@@ -154,7 +155,8 @@ export default function createCustomerStrategyRegistry(
                 store,
                 new GooglePayAuthorizeNetInitializer()
             ),
-            formPoster
+            formPoster,
+            paymentMethodActionCreator
         )
     );
 
@@ -170,7 +172,8 @@ export default function createCustomerStrategyRegistry(
                     )
                 )
             ),
-            formPoster
+            formPoster,
+            paymentMethodActionCreator
         )
     );
 
@@ -182,7 +185,8 @@ export default function createCustomerStrategyRegistry(
                 store,
                 new GooglePayCheckoutcomInitializer(requestSender)
             ),
-            formPoster
+            formPoster,
+            paymentMethodActionCreator
         )
     );
 
@@ -194,7 +198,8 @@ export default function createCustomerStrategyRegistry(
                 store,
                 new GooglePayCybersourceV2Initializer()
             ),
-            formPoster
+            formPoster,
+            paymentMethodActionCreator
         )
     );
 
@@ -206,7 +211,8 @@ export default function createCustomerStrategyRegistry(
                 store,
                 new GooglePayOrbitalInitializer()
             ),
-            formPoster
+            formPoster,
+            paymentMethodActionCreator
         )
     );
 
@@ -218,7 +224,8 @@ export default function createCustomerStrategyRegistry(
                 store,
                 new GooglePayStripeInitializer()
             ),
-            formPoster
+            formPoster,
+            paymentMethodActionCreator
         )
     );
 

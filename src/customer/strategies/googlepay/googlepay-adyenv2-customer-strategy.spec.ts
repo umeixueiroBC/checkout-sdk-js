@@ -4,10 +4,11 @@ import { createRequestSender, RequestSender } from '@bigcommerce/request-sender'
 import { getCart, getCartState } from '../../../cart/carts.mock';
 import { createCheckoutStore, CheckoutActionCreator, CheckoutRequestSender, CheckoutStore } from '../../../checkout';
 import { getCheckoutState } from '../../../checkout/checkouts.mock';
-import { InvalidArgumentError } from '../../../common/error/errors';
+import { InvalidArgumentError, MissingDataError } from '../../../common/error/errors';
 import { ConfigActionCreator, ConfigRequestSender } from '../../../config';
 import { getConfigState } from '../../../config/configs.mock';
 import { FormFieldsActionCreator, FormFieldsRequestSender } from '../../../form';
+import { PaymentMethodActionCreator, PaymentMethodRequestSender } from '../../../payment';
 import { getPaymentMethodsState } from '../../../payment/payment-methods.mock';
 import { createGooglePayPaymentProcessor, GooglePayAdyenV2Initializer, GooglePayPaymentProcessor } from '../../../payment/strategies/googlepay';
 import { getGooglePaymentDataMock } from '../../../payment/strategies/googlepay/googlepay.mock';
@@ -16,7 +17,7 @@ import { CustomerInitializeOptions } from '../../customer-request-options';
 import { getCustomerState } from '../../customers.mock';
 import CustomerStrategy from '../customer-strategy';
 
-import { getAdyenV2CustomerInitializeOptions, Mode } from './googlepay-customer-mock';
+import { getAdyenV2CustomerInitializeOptions, getPaymentMethod, Mode } from './googlepay-customer-mock';
 import GooglePayCustomerStrategy from './googlepay-customer-strategy';
 
 describe('GooglePayCustomerStrategy', () => {
@@ -25,6 +26,7 @@ describe('GooglePayCustomerStrategy', () => {
     let formPoster: FormPoster;
     let customerInitializeOptions: CustomerInitializeOptions;
     let paymentProcessor: GooglePayPaymentProcessor;
+    let paymentMethodActionCreator: PaymentMethodActionCreator;
     let remoteCheckoutActionCreator: RemoteCheckoutActionCreator;
     let requestSender: RequestSender;
     let store: CheckoutStore;
@@ -58,13 +60,18 @@ describe('GooglePayCustomerStrategy', () => {
             new GooglePayAdyenV2Initializer()
         );
 
+        paymentMethodActionCreator = new PaymentMethodActionCreator(
+            new PaymentMethodRequestSender(requestSender)
+        );
+
         formPoster = createFormPoster();
 
         strategy = new GooglePayCustomerStrategy(
             store,
             remoteCheckoutActionCreator,
             paymentProcessor,
-            formPoster
+            formPoster,
+            paymentMethodActionCreator
         );
 
         jest.spyOn(formPoster, 'postForm')
@@ -73,6 +80,10 @@ describe('GooglePayCustomerStrategy', () => {
             .mockReturnValue(Promise.resolve(store.getState()));
         jest.spyOn(paymentProcessor, 'initialize')
             .mockReturnValue(Promise.resolve());
+        jest.spyOn(paymentMethodActionCreator, 'loadPaymentMethod')
+            .mockResolvedValue(store.getState());
+        jest.spyOn(store.getState().paymentMethods, 'getPaymentMethodOrThrow')
+            .mockReturnValue(getPaymentMethod());
 
         walletButton = document.createElement('a');
         walletButton.setAttribute('id', 'mockButton');
@@ -101,16 +112,24 @@ describe('GooglePayCustomerStrategy', () => {
             expect(paymentProcessor.createButton).toHaveBeenCalled();
         });
 
-        it('fails to initialize the strategy if no GooglePayCustomerInitializeOptions is provided ', () => {
-            customerInitializeOptions = getAdyenV2CustomerInitializeOptions(Mode.Incomplete);
+        it('fails to initialize the strategy if storeUrl is empty ', async () => {
+            jest.spyOn(store.getState().paymentMethods, 'getPaymentMethodOrThrow')
+                .mockReturnValue( { ...getPaymentMethod(), initializationData: { storeUrl: '' } });
+            customerInitializeOptions = getAdyenV2CustomerInitializeOptions();
 
-            expect(() => strategy.initialize(customerInitializeOptions)).toThrow(InvalidArgumentError);
+            await expect(strategy.initialize(customerInitializeOptions)).rejects.toThrow(MissingDataError);
         });
 
-        it('fails to initialize the strategy if no methodid is supplied', () => {
+        it('fails to initialize the strategy if no GooglePayCustomerInitializeOptions is provided ', async () => {
+            customerInitializeOptions = getAdyenV2CustomerInitializeOptions(Mode.Incomplete);
+
+            await expect(strategy.initialize(customerInitializeOptions)).rejects.toThrow(InvalidArgumentError);
+        });
+
+        it('fails to initialize the strategy if no methodid is supplied', async () => {
             customerInitializeOptions = getAdyenV2CustomerInitializeOptions(Mode.UndefinedMethodId);
 
-            expect(() => strategy.initialize(customerInitializeOptions)).toThrow(InvalidArgumentError);
+            await expect(strategy.initialize(customerInitializeOptions)).rejects.toThrow(InvalidArgumentError);
         });
 
         it('fails to initialize the strategy if no valid container id is supplied', async () => {

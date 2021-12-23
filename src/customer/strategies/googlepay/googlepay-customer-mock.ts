@@ -8,6 +8,7 @@ export function getPaymentMethod(): PaymentMethod {
         initializationData: {
             checkoutId: 'checkoutId',
             allowedCardTypes: ['visa', 'amex', 'mastercard'],
+            storeUrl: 'https://testing.com',
         },
     };
 }
