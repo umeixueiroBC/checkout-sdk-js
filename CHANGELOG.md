@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.222.1-alpha.d98c0acb8f78ac1dc2fcf690b189fa85e90d620c](https://github.com/bigcommerce/checkout-sdk-js/compare/v1.217.0...v1.222.1-alpha.d98c0acb8f78ac1dc2fcf690b189fa85e90d620c) (2022-02-22)
+
+
+### Features
+
+* **checkout:** INT-5273 Non-Default Shipping Method Selection On Cart Page Is Not Persisted to Apple Pay ([d98c0ac](https://github.com/bigcommerce/checkout-sdk-js/commit/d98c0acb8f78ac1dc2fcf690b189fa85e90d620c))
+* **payment:** INT-5384 Openpay: Add the learn more button widget ([6990849](https://github.com/bigcommerce/checkout-sdk-js/commit/69908496e5692611b12a60dae0b43b45591a4dc7))
+* **payment:** INT-5467 Stripe UPE GooglePay ([a821b71](https://github.com/bigcommerce/checkout-sdk-js/commit/a821b718ef3bc15a3e5703e9aa6b1012bcc98df4))
+* **payment:** INT-5467 Stripe UPE GooglePay Checkout button and customer strategy ([a8ea005](https://github.com/bigcommerce/checkout-sdk-js/commit/a8ea005bd0f0632679cc4f499886d59cbd4e8256))
+* **payment:** INT-5467 Stripe UPE GooglePay PR feedback ([6eed391](https://github.com/bigcommerce/checkout-sdk-js/commit/6eed3918247a0c0683c232c34040ae91257b4907))
+* **payment:** PAYPAL-1151 braintree venmo spb integration ([#1346](https://github.com/bigcommerce/checkout-sdk-js/issues/1346)) ([dbca991](https://github.com/bigcommerce/checkout-sdk-js/commit/dbca9919143260ae7a9626b124604b3412cdac23))
+* **payment:** PAYPAL-1282 New style object for PayPal APMs ([#1330](https://github.com/bigcommerce/checkout-sdk-js/issues/1330)) ([89ecb3f](https://github.com/bigcommerce/checkout-sdk-js/commit/89ecb3f86019be9ddeadfa5b0e9d256fc4a88418))
+* **shipping:** CHECKOUT-6003 Add method to fetch available shipping options ([#1337](https://github.com/bigcommerce/checkout-sdk-js/issues/1337)) ([2405886](https://github.com/bigcommerce/checkout-sdk-js/commit/2405886003e928596e43b91d1f51a43875984a10))
+
 ## [1.222.0](https://github.com/bigcommerce/checkout-sdk-js/compare/v1.221.0...v1.222.0) (2022-02-21)
 
 
